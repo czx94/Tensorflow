@@ -33,23 +33,23 @@ keep_prob = tf.placeholder(tf.float32)
 #kernel size
 weights = {
     'c1': tf.Variable(tf.truncated_normal([3,3,3,64], stddev=0.001, name='wc1')),
-    'c2': tf.Variable(tf.truncated_normal([3,3,64,128], stddev=0.01, name='wc2')),
-    'c3': tf.Variable(tf.truncated_normal([3,3,128,128], stddev=0.01, name='wc3')),
-    'c4': tf.Variable(tf.truncated_normal([3,3,128,64], stddev=0.1, name='wc4')),
-    'c5': tf.Variable(tf.truncated_normal([3,3,64,64], stddev=0.1, name='wc5')),
-    'c6': tf.Variable(tf.truncated_normal([3,3,64,32], stddev=0.1, name='wc6')),
-    'f1': tf.Variable(tf.truncated_normal([4*4*32, 1024], stddev=0.01, name='fc1')),
+    'c2': tf.Variable(tf.truncated_normal([3,3,64,64], stddev=0.01, name='wc2')),
+    'c3': tf.Variable(tf.truncated_normal([3,3,64,128], stddev=0.01, name='wc3')),
+    'c4': tf.Variable(tf.truncated_normal([3,3,128,128], stddev=0.1, name='wc4')),
+    'c5': tf.Variable(tf.truncated_normal([3,3,128,256], stddev=0.1, name='wc5')),
+    'c6': tf.Variable(tf.truncated_normal([3,3,256,256], stddev=0.1, name='wc6')),
+    'f1': tf.Variable(tf.truncated_normal([4*4*256, 1024], stddev=0.01, name='fc1')),
     'f2': tf.Variable(tf.truncated_normal([1024, 128], stddev=0.1, name='fc2')),
     'f3': tf.Variable(tf.truncated_normal([128, 10], stddev=0.1, name='fc3'))
 }
 
 biases = {
     'c1': tf.Variable(tf.constant(0.01, shape=[64], name='bc1')),
-    'c2': tf.Variable(tf.constant(0.01, shape=[128], name='bc2')),
+    'c2': tf.Variable(tf.constant(0.01, shape=[64], name='bc2')),
     'c3': tf.Variable(tf.constant(0.01, shape=[128], name='bc3')),
-    'c4': tf.Variable(tf.constant(0.1, shape=[64], name='bc4')),
-    'c5': tf.Variable(tf.constant(0.1, shape=[64], name='bc5')),
-    'c6': tf.Variable(tf.constant(0.1, shape=[32], name='bc6')),
+    'c4': tf.Variable(tf.constant(0.1, shape=[128], name='bc4')),
+    'c5': tf.Variable(tf.constant(0.1, shape=[256], name='bc5')),
+    'c6': tf.Variable(tf.constant(0.1, shape=[256], name='bc6')),
     'f1': tf.Variable(tf.constant(0.1, shape=[1024], name='fc1')),
     'f2': tf.Variable(tf.constant(0.1, shape=[128], name='fc1')),
     'f3': tf.Variable(tf.constant(0.1, shape=[10], name='fc1'))

@@ -33,23 +33,23 @@ keep_prob = tf.placeholder(tf.float32)
 #kernel size
 weights = {
     'c1': tf.Variable(tf.truncated_normal([3,3,3,64], stddev=0.001, name='wc1')),
-    'c2': tf.Variable(tf.truncated_normal([3,3,64,128], stddev=0.001, name='wc2')),
+    'c2': tf.Variable(tf.truncated_normal([3,3,64,128], stddev=0.01, name='wc2')),
     'c3': tf.Variable(tf.truncated_normal([3,3,128,128], stddev=0.01, name='wc3')),
-    'c4': tf.truncated_normal([3,3,128,64], stddev=0.01, name='wc4'),
-    'c5': tf.truncated_normal([3,3,64,64], stddev=0.1, name='wc5'),
-    'c6': tf.truncated_normal([3,3,64,32], stddev=0.1, name='wc6'),
-    'f1': tf.Variable(tf.truncated_normal([4*4*32, 1024], stddev=0.1, name='fc1')),
+    'c4': tf.Variable(tf.truncated_normal([3,3,128,64], stddev=0.1, name='wc4')),
+    'c5': tf.Variable(tf.truncated_normal([3,3,64,64], stddev=0.1, name='wc5')),
+    'c6': tf.Variable(tf.truncated_normal([3,3,64,32], stddev=0.1, name='wc6')),
+    'f1': tf.Variable(tf.truncated_normal([4*4*64, 1024], stddev=0.1, name='fc1')),
     'f2': tf.Variable(tf.truncated_normal([1024, 128], stddev=0.1, name='fc2')),
     'f3': tf.Variable(tf.truncated_normal([128, 10], stddev=0.1, name='fc3'))
 }
 
 biases = {
-    'c1': tf.Variable(tf.constant(0.1, shape=[64], name='bc1')),
-    'c2': tf.Variable(tf.constant(0.1, shape=[128], name='bc2')),
-    'c3': tf.Variable(tf.constant(0.1, shape=[128], name='bc3')),
-    'c4': tf.constant(0.1, shape=[64], name='bc4'),
-    'c5': tf.constant(0.1, shape=[64], name='bc5'),
-    'c6': tf.constant(0.1, shape=[32], name='bc6'),
+    'c1': tf.Variable(tf.constant(0.01, shape=[64], name='bc1')),
+    'c2': tf.Variable(tf.constant(0.01, shape=[128], name='bc2')),
+    'c3': tf.Variable(tf.constant(0.01, shape=[128], name='bc3')),
+    'c4': tf.Variable(tf.constant(0.1, shape=[64], name='bc4')),
+    'c5': tf.Variable(tf.constant(0.1, shape=[64], name='bc5')),
+    'c6': tf.Variable(tf.constant(0.1, shape=[32], name='bc6')),
     'f1': tf.Variable(tf.constant(0.1, shape=[1024], name='fc1')),
     'f2': tf.Variable(tf.constant(0.1, shape=[128], name='fc1')),
     'f3': tf.Variable(tf.constant(0.1, shape=[10], name='fc1'))
@@ -111,41 +111,35 @@ def alexnet(X, weights, biases, dropout):
     #conv1
     conv1 = conv2d(X, weights['c1'], biases['c1'], 'conv1')
     pool1 = pooling(conv1, 2, 'pool1')
-    # norm1 = bn(pool1, 'norm1')
     norm1 = tf.nn.dropout(pool1, dropout)
 
     # conv2
     conv2 = conv2d(norm1, weights['c2'], biases['c2'], 'conv2')
     pool2 = pooling(conv2, 2, 'pool2')
-    # norm2 = bn(pool2, 'norm2')
     norm2 = tf.nn.dropout(pool2, dropout)
 
     # conv3
     conv3 = conv2d(norm2, weights['c3'], biases['c3'], 'conv3')
     pool3 = pooling(conv3, 2, 'pool3')
-    # norm3 = bn(pool3, 'norm3')
     norm3 = tf.nn.dropout(pool3, dropout)
 
-    # conv1
-    conv1 = conv2d(X, weights['c1'], biases['c1'], 'conv1')
-    pool1 = pooling(conv1, 2, 'pool1')
-    # norm1 = bn(pool1, 'norm1')
-    norm1 = tf.nn.dropout(pool1, dropout)
+    # conv4
+    conv4 = conv2d(norm3, weights['c4'], biases['c4'], 'conv4')
 
-    # conv2
-    conv2 = conv2d(norm1, weights['c2'], biases['c2'], 'conv2')
-    pool2 = pooling(conv2, 2, 'pool2')
-    # norm2 = bn(pool2, 'norm2')
-    norm2 = tf.nn.dropout(pool2, dropout)
+    # # conv4
+    # conv4 = conv2d(norm3, weights['c4'], biases['c4'], 'conv4')
+    # pool4 = pooling(conv4, 2, 'pool4')
 
-    # conv3
-    conv3 = conv2d(norm2, weights['c3'], biases['c3'], 'conv3')
-    pool3 = pooling(conv3, 2, 'pool3')
-    # norm3 = bn(pool3, 'norm3')
-    norm3 = tf.nn.dropout(pool3, dropout)
+    # # conv5
+    # conv5 = conv2d(norm4, weights['c5'], biases['c5'], 'conv5')
+    # pool5 = pooling(conv5, 2, 'pool5')
+    #
+    # # conv6
+    # conv6 = conv2d(norm5, weights['c6'], biases['c6'], 'conv6')
+    # pool6 = pooling(conv6, 2, 'pool6')
 
     #fc
-    fc1 = tf.reshape(norm3, [-1, weights['f1'].get_shape().as_list()[0]])
+    fc1 = tf.reshape(conv4, [-1, weights['f1'].get_shape().as_list()[0]])
     fc1 = fc_layer(fc1, weights['f1'], biases['f1'], 'fc1')
     fc2 = fc_layer(fc1, weights['f2'], biases['f2'], 'fc2')
     fc3 = fc_layer(fc2, weights['f3'], biases['f3'], 'fc3', batch_norm=False)

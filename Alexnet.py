@@ -9,8 +9,8 @@ import cifar10
 cifar10_dir = './cifar-10-batches-py/'
 X_train, y_train, X_test, y_test = cifar10.load_CIFAR10(cifar10_dir)
 #create data generator
-train_generator = cifar10.data_generator(X_train, y_train, 128)
-test_generator = cifar10.data_generator(X_test, y_test, 128)
+train_generator = cifar10.data_generator(X_train, y_train, 256)
+test_generator = cifar10.data_generator(X_test, y_test, 1024)
 
 #Hyperparameters
 learning_rate = 0.001
@@ -38,7 +38,7 @@ weights = {
     'c4': tf.Variable(tf.truncated_normal([3,3,128,64], stddev=0.1, name='wc4')),
     'c5': tf.Variable(tf.truncated_normal([3,3,64,64], stddev=0.1, name='wc5')),
     'c6': tf.Variable(tf.truncated_normal([3,3,64,32], stddev=0.1, name='wc6')),
-    'f1': tf.Variable(tf.truncated_normal([4*4*64, 1024], stddev=0.1, name='fc1')),
+    'f1': tf.Variable(tf.truncated_normal([4*4*32, 1024], stddev=0.01, name='fc1')),
     'f2': tf.Variable(tf.truncated_normal([1024, 128], stddev=0.1, name='fc2')),
     'f3': tf.Variable(tf.truncated_normal([128, 10], stddev=0.1, name='fc3'))
 }
@@ -110,8 +110,8 @@ def alexnet(X, weights, biases, dropout):
 
     #conv1
     conv1 = conv2d(X, weights['c1'], biases['c1'], 'conv1')
-    pool1 = pooling(conv1, 2, 'pool1')
-    norm1 = tf.nn.dropout(pool1, dropout)
+    # pool1 = pooling(conv1, 2, 'pool1')
+    norm1 = tf.nn.dropout(conv1, dropout)
 
     # conv2
     conv2 = conv2d(norm1, weights['c2'], biases['c2'], 'conv2')
@@ -120,26 +120,26 @@ def alexnet(X, weights, biases, dropout):
 
     # conv3
     conv3 = conv2d(norm2, weights['c3'], biases['c3'], 'conv3')
-    pool3 = pooling(conv3, 2, 'pool3')
-    norm3 = tf.nn.dropout(pool3, dropout)
+    # pool3 = pooling(conv3, 2, 'pool3')
+    norm3 = tf.nn.dropout(conv3, dropout)
 
     # conv4
     conv4 = conv2d(norm3, weights['c4'], biases['c4'], 'conv4')
+    pool4 = pooling(conv4, 2, 'pool4')
+    norm4 = tf.nn.dropout(pool4, dropout)
 
-    # # conv4
-    # conv4 = conv2d(norm3, weights['c4'], biases['c4'], 'conv4')
-    # pool4 = pooling(conv4, 2, 'pool4')
-
-    # # conv5
-    # conv5 = conv2d(norm4, weights['c5'], biases['c5'], 'conv5')
+    # conv5
+    conv5 = conv2d(norm4, weights['c5'], biases['c5'], 'conv5')
     # pool5 = pooling(conv5, 2, 'pool5')
-    #
-    # # conv6
-    # conv6 = conv2d(norm5, weights['c6'], biases['c6'], 'conv6')
-    # pool6 = pooling(conv6, 2, 'pool6')
+    norm5 = tf.nn.dropout(conv5, dropout)
+
+    # conv6
+    conv6 = conv2d(norm5, weights['c6'], biases['c6'], 'conv6')
+    pool6 = pooling(conv6, 2, 'pool6')
+    norm6 = tf.nn.dropout(pool6, dropout)
 
     #fc
-    fc1 = tf.reshape(conv4, [-1, weights['f1'].get_shape().as_list()[0]])
+    fc1 = tf.reshape(norm6, [-1, weights['f1'].get_shape().as_list()[0]])
     fc1 = fc_layer(fc1, weights['f1'], biases['f1'], 'fc1')
     fc2 = fc_layer(fc1, weights['f2'], biases['f2'], 'fc2')
     fc3 = fc_layer(fc2, weights['f3'], biases['f3'], 'fc3', batch_norm=False)
@@ -175,7 +175,8 @@ with tf.Session() as sess:
             print ("Iter " + str(step) + ", Minibatch Loss= " + "{:.6f}".format(loss_val) + ", Training Accuracy= " + "{:.5f}".format(acc))
         #Test acc
         if step % 1000 == 0:
-            print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: X_test, y: y_test, keep_prob: 1.}))
+            batch_x, batch_y = next(test_generator)
+            print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: batch_x, y: batch_y, keep_prob: 1.}))
         step += 1
 
     print ("Optimization Finished!")
